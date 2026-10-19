@@ -80,7 +80,7 @@ export function install(rt) {
   })
   // What a host that only reads the team may still answer.
   // Updates change the dsh profile, not the team, so a reading host may run them too.
-  const READS = new Set(['state', 'models', 'efforts', 'earlier', 'room-progress', 'exchange', 'exchange-text', 'file-text', 'usage', 'schedules', 'memory-view', 'browser-wait', 'browser-result', 'diagnostics', 'diagnostics-log', 'diagnostics-clear', 'update-check', 'update-install', 'dsh-update-install', 'repo-stars', 'approval-answer'])
+  const READS = new Set(['state', 'models', 'efforts', 'earlier', 'room-progress', 'exchange', 'exchange-text', 'file-text', 'usage', 'schedules', 'memory-view', 'browser-wait', 'browser-result', 'diagnostics', 'diagnostics-log', 'diagnostics-clear', 'update-check', 'update-install', 'dsh-update-install', 'repo-stars', 'approval-answer', 'steward-view', 'a2api-health'])
 
   function setPrefs(body) {
     if (body.theme !== undefined) {
@@ -261,6 +261,13 @@ export function install(rt) {
         case 'schedule-delete':
           await rt.load()
           return ok(await rt.scheduleEndpoint(endpoint, body))
+        case 'steward-view':
+          await rt.load()
+          return ok(rt.stewardView())
+        case 'steward-apply':
+          return ok(await rt.stewardApply())
+        case 'a2api-health':
+          return ok(await rt.a2apiHealth())
         case 'memory-view':
         case 'memory-ask':
         case 'memory-forget':
