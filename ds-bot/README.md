@@ -57,7 +57,7 @@ Run `pnpm install` in the profile folder, then start dsh from the deepseek-harne
 pnpm -s dsh --profile web --no-open
 ```
 
-The first time the team opens, the plugin creates a Main Bot called Chief.
+The first time the team opens, the plugin creates one Main Bot called Chief and gives it the Chinese Chief instructions from the steward preset. Work, Invest, the memory topics and the weekday invest brief are not created until you ask Chief to call `apply_steward_team`. See [UPGRADE.md](../UPGRADE.md).
 
 **Updates:** Settings → Plugin updates checks this fork's complete GitHub releases, including same-version revisions. Install directly through DSH's plugin manager; Repair installation reinstalls the latest release explicitly. Archive installations migrate to immutable source without deleting conversations or disabling integrity checks. See the [update guide](../docs/plugin-updates.md) ([中文](../docs/plugin-updates.zh.md)) for supported sources and recovery.
 

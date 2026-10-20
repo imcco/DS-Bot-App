@@ -3,6 +3,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { MAX_AVATAR_IMAGE, ROOM_MAX_MEMBERS, ROOM_MODES, ROOM_NAME_MAX, ROOM_NOTICE_MAX } from './constants.js'
+import { CHIEF, DEFAULT_MAIN_ROLE } from './steward-preset.js'
 import { currentColor, isColor, normalize, unquote } from './text.js'
 import { nameProblem } from '../shared/mentions.js'
 
@@ -567,7 +568,8 @@ export function install(rt) {
     if (state.mainBotIds.some(id => rt.botOf(id))) return
     // Only the team's first Main Bot is stored as the DeepSeek whale; other Bots get a
     // look from their id, and a Bot made Main Bot later keeps its own.
-    bootstrapping ??= createBot({ name: defaults.mainName, role: defaults.mainRole, main: true, color: 'deepseek', avatar: { shape: 'whale' }, pickModel: true })
+    const role = defaults.mainRole === DEFAULT_MAIN_ROLE ? CHIEF.role : defaults.mainRole
+    bootstrapping ??= createBot({ name: defaults.mainName, role, instructions: CHIEF.instructions, main: true, color: 'deepseek', avatar: { shape: 'whale' }, pickModel: true })
       .finally(() => { bootstrapping = null })
     await bootstrapping
   }

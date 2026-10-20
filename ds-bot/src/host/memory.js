@@ -1372,6 +1372,39 @@ export function install(rt) {
     }, 'ds-bot: memory review')
   }
 
+  // A topic file with a purpose note and an Index link, and no fact yet. An existing
+  // topic is left as it is, including one the user already filled in.
+  function ensureMemoryTopic({ scope, topic, note, actor = USER, label }) {
+    return queued(async () => {
+      writable(scope, actor)
+      const name = cleanTopic(topic)
+      if (name === undefined) throw new Error('A topic needs a short name.')
+      const text = String(note ?? '').trim()
+      if (text === '' || /\n/.test(text)) throw new Error('A topic note is one line.')
+      if (secretEntry(text)) throw new Error('A topic note cannot hold a key or an account number.')
+      const files = loadScope(scope)
+      const main = files[0]
+      const existing = files.find(file => file.topic === name)
+      if (existing !== undefined) {
+        if (main.links.includes(name)) return { changed: false, topic: name }
+        const index = joinLines(addLink(main.lines.length > 0 ? main.lines : parseMemory(EMPTY_MAIN).lines, name))
+        checkSize(main, index, label)
+        await writeText(main.path, index)
+        await journal({ op: 'scaffold', scope: scopeKey(scope), file: MAIN, ...actorOf(actor), after: `[[${name}]]` })
+        return { changed: true, topic: name }
+      }
+      if (files.length - 1 >= MEMORY_LIMITS.topics) throw new Error(`${capital(label)} already has ${MEMORY_LIMITS.topics} topics.`)
+      const body = `# ${name}\n\n${text}\n`
+      const index = main.links.includes(name) ? undefined : joinLines(addLink(main.lines.length > 0 ? main.lines : parseMemory(EMPTY_MAIN).lines, name))
+      checkSize({ topic: name, content: '' }, body, label)
+      if (index !== undefined) checkSize(main, index, label)
+      await writeText(join(dirOf(scope), `${name}.md`), body)
+      if (index !== undefined) await writeText(main.path, index)
+      await journal({ op: 'scaffold', scope: scopeKey(scope), file: `${name}.md`, ...actorOf(actor), after: text })
+      return { changed: true, topic: name }
+    })
+  }
+
   async function memoryEndpoint(endpoint, body) {
     if (endpoint === 'memory-view') return memoryView(body)
     if (endpoint === 'memory-ask') return memoryAsk(body)
@@ -1380,7 +1413,7 @@ export function install(rt) {
   }
 
   Object.assign(rt, {
-    memoryEnabled: true, renewMemory, archiveBotMemory, memoryEndpoint, memoryReviews,
+    memoryEnabled: true, renewMemory, archiveBotMemory, memoryEndpoint, memoryReviews, ensureMemoryTopic,
     memoryNews: () => Object.fromEntries(news),
   })
 }
